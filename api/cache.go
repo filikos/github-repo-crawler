@@ -14,10 +14,10 @@ const (
 )
 
 type CacheConnector interface {
+	AddRepositories(username string, repos model.Repositories) 
+	AddCommits(username, reponame string, commits model.Commits) 
 	Repositories(username string) (interface{}, error)
-	AddRepositories(username string, repos model.Repositories) error
 	Commits(username, reponame string) (interface{}, error)
-	AddCommits(username, reponame string, commits model.Commits) error
 }
 
 type Cache struct {
@@ -43,15 +43,14 @@ func (c *Cache) Repositories(username string) (interface{}, error) {
 	return repos, nil
 }
 
-func (c *Cache) AddRepositories(username string, repos model.Repositories) error {
+func (c *Cache) AddRepositories(username string, repos model.Repositories)  {
 
-	return c.cache.Replace(username, repos, cache.DefaultExpiration)
+	c.cache.Set(username, repos, cache.DefaultExpiration)
 }
 
-func (c *Cache) AddCommits(username, reponame string, commits model.Commits) error {
+func (c *Cache) AddCommits(username, reponame string, commits model.Commits) {
 
 	c.cache.Set(fmt.Sprintf("%s%s", username, reponame), commits, cache.DefaultExpiration)
-	return nil
 }
 
 func (c *Cache) Commits(username, reponame string) (interface{}, error) {
