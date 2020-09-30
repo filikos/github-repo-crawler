@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"net/http"
-	"strings"
 	"workspace-go/github-repo-crawler/model"
 
 	"github.com/gin-gonic/gin"
@@ -14,11 +12,11 @@ import (
 
 type Service struct {
 	// TODO: add DB connector
-	// TODO: add Cache
+	Cache Cache
 }
 
 func (s *Service) Repositories(c *gin.Context) {
-	
+
 	username, _ := c.Params.Get("username")
 	if len(username) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -26,6 +24,20 @@ func (s *Service) Repositories(c *gin.Context) {
 		})
 		return
 	}
+
+	repos, err := s.Cache.Repositories(username)
+	if err == nil {
+		reposTyped, ok := repos.(model.Repositories)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, nil)
+			return
+		}
+
+		c.JSON(http.StatusOK, reposTyped.GetNames())
+		return
+	}
+
+	fmt.Println(err)
 
 	resp, err := http.Get(fmt.Sprintf("https://api.github.com/users/%s/repos", username))
 	if err != nil {
@@ -51,16 +63,12 @@ func (s *Service) Repositories(c *gin.Context) {
 		return
 	}
 
-	repoNames := make([]string, 0)
-	for _, v := range respData {
-		repoNames = append(repoNames, v.Name)
-	}
-
-	c.JSON(http.StatusOK, repoNames)
+	s.Cache.AddRepositories(username, respData)
+	c.JSON(http.StatusOK, respData.GetNames())
 }
 
 func (s *Service) Commits(c *gin.Context) {
-	
+
 	username, _ := c.Params.Get("username")
 	reponame, _ := c.Params.Get("reponame")
 	if len(username) == 0 || len(reponame) == 0 {
@@ -70,50 +78,59 @@ func (s *Service) Commits(c *gin.Context) {
 		return
 	}
 
-	resp, err := http.Get(fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", username, reponame))
-	if err != nil {
-		fmt.Print(err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		c.JSON(resp.StatusCode, nil)
-		return
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-
-	var respData []model.CommitMeta
-	err = json.Unmarshal(body, &respData)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-
 	search := c.Query("search")
-	if len(search) == 0 {
-		commits := make(model.Commits, 0)
-		max := math.Max(20, float64(len(respData)))
-		for i := 0; i < int(max); i++ {
-			commits = append(commits, respData[i].Commit)
+	var respData model.CommitMetas
+
+	commits, err := s.Cache.Commits(username, reponame)
+	if err != nil {
+
+		fmt.Print(err)
+
+		resp, err := http.Get(fmt.Sprintf("https://api.github.com/repos/%s/%s/commits", username, reponame))
+		if err != nil {
+			fmt.Print(err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			c.JSON(resp.StatusCode, nil)
+			return
 		}
 
-		c.JSON(http.StatusOK, commits)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, nil)
+			return
+		}
+
+		err = json.Unmarshal(body, &respData)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, nil)
+			return
+		}
+
+		s.Cache.AddCommits(username, reponame, respData.GetCommits())
+
+		if len(search) == 0 {
+			c.JSON(http.StatusOK, respData.GetCommits())
+			return
+		}
+
+		commits := respData.GetCommits()
+		c.JSON(http.StatusOK, commits.GetCommitsBySearch(search))
 		return
 	}
 
-	commits := make(model.Commits, 0)
-	max := math.Max(20, float64(len(respData)))
-	for i := 0; i < int(max); i++ {
-
-		if strings.Contains(respData[i].Commit.Message, search) {
-			commits = append(commits, respData[i].Commit)
-		}
+	commitsTyped, ok := commits.(model.Commits)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, commits)
+	if len(search) == 0 {
+		c.JSON(http.StatusOK, commitsTyped)
+		return
+	}
+
+	c.JSON(http.StatusOK, commitsTyped.GetCommitsBySearch(search))
 }
