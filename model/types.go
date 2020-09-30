@@ -1,8 +1,21 @@
 package model
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type Repositories []Repository
+
+func (repos *Repositories) GetNames() []string {
+
+	repoNames := make([]string, 0)
+	for _, r := range *repos {
+		repoNames = append(repoNames, r.Name)
+	}
+
+	return repoNames
+}
 
 type Repository struct {
 	ID               int       `json:"id"`
@@ -109,17 +122,34 @@ type License struct {
 	NodeID string `json:"node_id"`
 }
 
+type CommitMetas []CommitMeta
 type CommitMeta struct {
-	Author AuthorMeta `json:"author"`
-	CommentsURL string `json:"comments_url"`
-	Commit     Commit  `json:"commit"`
-	Committer CommiterMeta `json:"committer"`
-	HTMLURL string `json:"html_url"`
-	NodeID  string `json:"node_id"`
-	Parents Parents `json:"parents"`
-	Sha string `json:"sha"`
-	URL string `json:"url"`
+	Author      AuthorMeta   `json:"author"`
+	CommentsURL string       `json:"comments_url"`
+	Commit      Commit       `json:"commit"`
+	Committer   CommiterMeta `json:"committer"`
+	HTMLURL     string       `json:"html_url"`
+	NodeID      string       `json:"node_id"`
+	Parents     Parents      `json:"parents"`
+	Sha         string       `json:"sha"`
+	URL         string       `json:"url"`
 }
+
+func (cms *CommitMetas) GetCommits() Commits {
+
+	commits := make(Commits, 0)
+	for i, c := range *cms {
+		commits = append(commits, c.Commit)
+
+		if i == 19 {
+			break
+		}
+	}
+
+	return commits
+}
+
+
 
 type CommiterMeta struct {
 	AvatarURL         string `json:"avatar_url"`
@@ -165,13 +195,29 @@ type AuthorMeta struct {
 
 type Commits []Commit
 
+func (cmts *Commits) GetCommitsBySearch(search string) Commits {
+
+	commits := make(Commits, 0)
+	for i, c := range *cmts {
+		if strings.Contains(c.Message , search) {
+			commits = append(commits, c)
+		}
+
+		if i == 19 {
+			break
+		}
+	}
+
+	return commits
+}
+
 type Commit struct {
-	Author Author `json:"author"`
-	CommentCount int64 `json:"comment_count"`
-	Committer    Commiter `json:"committer"`
-	Message string `json:"message"`
-	Tree    Tree `json:"tree"`
-	URL          string `json:"url"`
+	Author       Author       `json:"author"`
+	CommentCount int64        `json:"comment_count"`
+	Committer    Commiter     `json:"committer"`
+	Message      string       `json:"message"`
+	Tree         Tree         `json:"tree"`
+	URL          string       `json:"url"`
 	Verification Verification `json:"verification"`
 }
 
@@ -180,7 +226,7 @@ type Verification struct {
 	Reason    string `json:"reason"`
 	Signature string `json:"signature"`
 	Verified  bool   `json:"verified"`
-} 
+}
 
 type Author struct {
 	Date  string `json:"date"`
@@ -198,7 +244,6 @@ type Tree struct {
 	Sha string `json:"sha"`
 	URL string `json:"url"`
 }
-
 
 type Parents []struct {
 	HTMLURL string `json:"html_url"`
