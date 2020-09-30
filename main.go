@@ -10,7 +10,11 @@ import (
 func main() {
 	r := gin.Default()
 
-	service := api.Service{}
+	
+	service := api.Service{
+		Cache: api.InitCache(),
+	}
+
 	r.GET("/repositories/:username", service.Repositories)
 	r.GET("/repositories/:username/commits/:reponame", service.Commits)
 

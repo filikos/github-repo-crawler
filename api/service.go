@@ -14,11 +14,11 @@ import (
 
 type Service struct {
 	// TODO: add DB connector
-	// TODO: add Cache
+	Cache Cache
 }
 
 func (s *Service) Repositories(c *gin.Context) {
-	
+
 	username, _ := c.Params.Get("username")
 	if len(username) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -60,7 +60,7 @@ func (s *Service) Repositories(c *gin.Context) {
 }
 
 func (s *Service) Commits(c *gin.Context) {
-	
+
 	username, _ := c.Params.Get("username")
 	reponame, _ := c.Params.Get("reponame")
 	if len(username) == 0 || len(reponame) == 0 {
