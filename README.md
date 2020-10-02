@@ -115,3 +115,76 @@ Content-Type: **application/json**<br/>
 
 </p>
 </details>
+
+### Requirements
+
+- Go v1.14.4
+- Docker v19.03.12
+- Docker-Compose v1.26.2
+- PostgreQSL Docker-Image
+
+---
+
+### Run the github-repo-crawler
+
+To use persistant data store the PostgreSQL files location is needed. The path is working on MacOS & Linux, for Windows systems you may need to change the Postgres volume path within the docker-compose.yml.
+
+```
+mdkir $HOME/docker/volumes/postgres
+```
+
+Copy PostgreSQL files into the directory above or create a new database. Use the migration.sql script to create the nessessary tables.
+
+Starting the API & PostgreSQL in Docker containers:
+
+```
+docker-compose up
+```
+
+Stop both containers:
+
+```
+docker-compose down
+```
+
+---
+
+## Development Environment:
+
+For development purposes it is recommended to start the PostgreSQL Database manually using docker.
+
+```
+cd $GOPATH/src/github-repo-crawler
+
+docker run --name dev --env-file ./config/dbConfig.env -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres
+```
+
+### Access Database within Docker container:
+
+1. Open new bash window: `docker container ls`
+2. `docker exec -it *POSTGRES_CONTAINER_ID* psql -U postgres -W postgres`
+3. Run SQL Querys: Example `SELECT * FROM Repositories;`
+
+The command `go run main.go` will start the Rest-API listen to http://localhost:8080. The API will try to connect with the, make sure the Database is already running.
+
+`go run main.go -h`
+
+```
+NAME:
+   Github-Repo-Crawler - A new cli application
+
+USAGE:
+   main [global options] command [command options] [arguments...]
+
+VERSION:
+   v1.0.0
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --port value        Port the Rest-API will listen on. (default: 8080)
+   --configPath value  Path to *.env postgres config file. (default: ./config/dbConfig.env)
+   --help, -h          show help (default: false)
+   --version, -v       print the version (default: false)
+```
