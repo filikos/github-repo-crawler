@@ -8,6 +8,7 @@ import (
 	"workspace-go/github-repo-crawler/model"
 
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/prometheus/common/log"
 )
 
@@ -54,7 +55,7 @@ func InitDB(configPath string) (*Database, error) {
 		err = dbPool.Ping()
 		if err == nil {
 
-			dbPool.SetMaxOpenConns(7)
+			dbPool.SetMaxOpenConns(20)
 			dbPool.SetMaxIdleConns(5)
 
 			fmt.Println("Database connection established")
@@ -71,7 +72,7 @@ func InitDB(configPath string) (*Database, error) {
 func (db *Database) GetRecentRepositories(username string) (model.DBRepositories, error) {
 
 	sqlStatement := `SELECT * FROM Repositories WHERE username = $1`
-	rows, err := db.Conn.Query(sqlStatement)
+	rows, err := db.Conn.Query(sqlStatement, username)
 	if err != nil {
 		fmt.Printf("Query: Unable to get repositories: %v", err)
 		return nil, err
@@ -98,18 +99,19 @@ func (db *Database) GetRecentRepositories(username string) (model.DBRepositories
 func (db *Database) ReplaceRecentRepositories(username string, repos model.Repositories) error {
 
 	sqlDeleteStatement := `DELETE FROM Repositories;`
-	_, err := db.Conn.Exec(sqlDeleteStatement, nil)
+	_, err := db.Conn.Exec(sqlDeleteStatement)
 	if err != nil {
-		return fmt.Errorf("unable to replace recent repositories: %v", err)
+		return fmt.Errorf("unable to remove last entries for replacing recent repositories: %v", err)
 	}
 
-	sqlStatement := `INSERT INTO Repositories(id, username, name) VALUES($1, $2, $3)`
+	sqlStatement := `INSERT INTO Repositories(id, username, name) VALUES($1, $2, $3);`
 	for _, repo := range repos {
-		_, err := db.Conn.Query(sqlStatement, repo.ID, username, repo.Name)
+		row, err := db.Conn.Query(sqlStatement, repo.ID, username, repo.Name)
 		if err != nil {
 			return fmt.Errorf("unable to replace recent repositories: %v", err)
 		}
+		defer row.Close()
 	}
-	
+
 	return nil
 }
