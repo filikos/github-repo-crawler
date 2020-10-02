@@ -149,8 +149,6 @@ func (cms *CommitMetas) GetCommits() Commits {
 	return commits
 }
 
-
-
 type CommiterMeta struct {
 	AvatarURL         string `json:"avatar_url"`
 	EventsURL         string `json:"events_url"`
@@ -199,7 +197,7 @@ func (cmts *Commits) GetCommitsBySearch(search string) Commits {
 
 	commits := make(Commits, 0)
 	for i, c := range *cmts {
-		if strings.Contains(c.Message , search) {
+		if strings.Contains(c.Message, search) {
 			commits = append(commits, c)
 		}
 
@@ -249,4 +247,12 @@ type Parents []struct {
 	HTMLURL string `json:"html_url"`
 	Sha     string `json:"sha"`
 	URL     string `json:"url"`
+}
+
+type DBRepositories []DBRepository
+
+type DBRepository struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Name     string `json:"name"`
 }
