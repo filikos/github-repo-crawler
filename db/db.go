@@ -8,6 +8,7 @@ import (
 	"workspace-go/github-repo-crawler/model"
 
 	"github.com/joho/godotenv"
+	"github.com/prometheus/common/log"
 )
 
 const (
@@ -23,8 +24,8 @@ type Database struct {
 
 type DBConnector interface {
 	InitDB(configPath string) (*Database, error)
-	GetRecentRepositories(username string) (model.Repositories, error)
-	AddRecentRepositories(username string, repos model.Repositories) error
+	GetRecentRepositories(username string) (model.DBRepositories, error)
+	ReplaceRecentRepositories(username string, repos model.DBRepositories) error
 }
 
 func InitDB(configPath string) (*Database, error) {
@@ -67,14 +68,48 @@ func InitDB(configPath string) (*Database, error) {
 	return nil, fmt.Errorf("Failed to connect database. Server will be shut down. Error: %v", err)
 }
 
-func (db *Database) GetRecentRepositories(username string) (model.Repositories, error) {
+func (db *Database) GetRecentRepositories(username string) (model.DBRepositories, error) {
 
-	// TODO:
-	return nil, nil
+	sqlStatement := `SELECT * FROM Repositories WHERE username = $1`
+	rows, err := db.Conn.Query(sqlStatement)
+	if err != nil {
+		fmt.Printf("Query: Unable to get repositories: %v", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var repositories model.DBRepositories
+	for rows.Next() {
+
+		var repository model.DBRepository
+		err := rows.Scan(&repository.ID, &repository.Username, &repository.Name)
+		if err != nil {
+			log.Info(fmt.Sprintf("Unable to scan row:%v", err))
+			continue
+		}
+
+		repositories = append(repositories, repository)
+	}
+
+	return repositories, nil
 }
 
-func (db *Database) AddRecentRepositories(username string, repos model.Repositories) error {
+func (db *Database) ReplaceRecentRepositories(username string, repos model.Repositories) error {
 
-	// TODO:
+	sqlDeleteStatement := `DELETE FROM Repositories;`
+	_, err := db.Conn.Exec(sqlDeleteStatement, nil)
+	if err != nil {
+		return fmt.Errorf("unable to replace recent repositories: %v", err)
+	}
+
+	sqlStatement := `INSERT INTO Repositories(id, username, name) VALUES($1, $2, $3)`
+	for _, repo := range repos {
+		_, err := db.Conn.Query(sqlStatement, repo.ID, username, repo.Name)
+		if err != nil {
+			return fmt.Errorf("unable to replace recent repositories: %v", err)
+		}
+	}
+	
 	return nil
 }
