@@ -67,7 +67,7 @@ func (s *Service) Repositories(c *gin.Context) {
 	s.Cache.AddRepositories(username, respData)
 
 	go func() {
-		if err := s.DBConnector.ReplaceRecentRepositories(username, respData[0:20]); err != nil {
+		if err := s.DBConnector.ReplaceRecentRepositories(username, respData); err != nil {
 			fmt.Println(err)
 		}
 	}()
@@ -77,15 +77,7 @@ func (s *Service) Repositories(c *gin.Context) {
 
 func (s *Service) RepositoriesDB(c *gin.Context) {
 
-	username, _ := c.Params.Get("username")
-	if len(username) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "username can't be empty",
-		})
-		return
-	}
-
-	repositories, err := s.DBConnector.GetRecentRepositories(username)
+	repositories, err := s.DBConnector.GetRecentRepositories()
 	if err != nil {
 		fmt.Println(err)
 		return

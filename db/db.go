@@ -25,7 +25,7 @@ type Database struct {
 
 type DBConnector interface {
 	InitDB(configPath string) (*Database, error)
-	GetRecentRepositories(username string) (model.DBRepositories, error)
+	GetRecentRepositories() (model.DBRepositories, error)
 	ReplaceRecentRepositories(username string, repos model.DBRepositories) error
 }
 
@@ -69,10 +69,10 @@ func InitDB(configPath string) (*Database, error) {
 	return nil, fmt.Errorf("Failed to connect database. Server will be shut down. Error: %v", err)
 }
 
-func (db *Database) GetRecentRepositories(username string) (model.DBRepositories, error) {
+func (db *Database) GetRecentRepositories() (model.DBRepositories, error) {
 
-	sqlStatement := `SELECT * FROM Repositories WHERE username = $1`
-	rows, err := db.Conn.Query(sqlStatement, username)
+	sqlStatement := `SELECT * FROM Repositories LIMIT 20,20;`
+	rows, err := db.Conn.Query(sqlStatement)
 	if err != nil {
 		fmt.Printf("Query: Unable to get repositories: %v", err)
 		return nil, err

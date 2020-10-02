@@ -24,8 +24,8 @@ func main() {
 	}
 
 	r.GET("/repositories/:username", service.Repositories)
-	r.GET("/repositoriesdb/:username", service.RepositoriesDB)
 	r.GET("/repositories/:username/commits/:reponame", service.Commits)
+	r.GET("/recentrepositories", service.RepositoriesDB)
 
 	if err := r.Run(":8080"); err != nil {
 		os.Exit(1)
