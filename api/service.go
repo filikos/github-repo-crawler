@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"workspace-go/github-repo-crawler/db"
 	"workspace-go/github-repo-crawler/model"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Service struct {
-	// TODO: add DB connector
-	Cache Cache
+	Cache       Cache
+	DBConnector db.Database
 }
 
 func (s *Service) Repositories(c *gin.Context) {
