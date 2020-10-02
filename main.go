@@ -33,7 +33,7 @@ func main() {
 	app.Action = func(c *cli.Context) error {
 		r := gin.Default()
 
-		dbConn, err := db.InitDB("config/dbConfig.env")
+		dbConn, err := db.InitDB(c.String("configPath"))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -48,7 +48,7 @@ func main() {
 		r.GET("/repositories/:username/commits/:reponame", service.Commits)
 		r.GET("/recentrepositories", service.RepositoriesDB)
 
-		if err := r.Run(fmt.Sprintf(":%v",c.Int("port"))); err != nil {
+		if err := r.Run(fmt.Sprintf(":%v", c.Int("port"))); err != nil {
 			os.Exit(1)
 		}
 
