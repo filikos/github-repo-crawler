@@ -1,6 +1,6 @@
 # Github-repo-crawler
 
-This REST-full API connects to the Github API and provides functionality for fetching data from public repositorys.
+This REST-full API connects to the Github API and provides functionality for fetching data from public repositorys. Caching is implemented for quicker response times and also for relieving the Github API. PostgreSQL is used for persistant data storage.
 
 # Endpoints
 
