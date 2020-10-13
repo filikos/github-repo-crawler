@@ -1,6 +1,6 @@
 include ./config/dbConfig.env
 
-all : install stop
+all : install
 .PHONY : all
 
 install :
@@ -9,7 +9,7 @@ install :
 	docker pull migrate/migrate
 	
 	@echo "Starting postgreSQL database"
-	docker run -d \
+	docker run -t -d \
 	--name dev \
 	--env-file $(shell pwd)/config/dbConfig.env \
 	-p 5432:5432 \
