@@ -1,3 +1,5 @@
+include ./config/dbConfig.env
+
 all : install stop
 .PHONY : all
 
@@ -21,7 +23,7 @@ install :
 	-v $(shell pwd)/migrations:/migrations \
 	--network host migrate/migrate \
 	-path=/migrations/ \
-	-database "postgres://postgres:postgresPW@localhost:5432/?sslmode=disable" up
+	-database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/?sslmode=disable" up
 	# for specific migration: ....432/?sslmode=disable" up {{add integer migration number}}
 
 	@echo "Stop and remove PostgreSQL container"
