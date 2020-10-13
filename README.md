@@ -156,7 +156,7 @@ For development purposes it is recommended to start the PostgreSQL Database manu
 ```
 cd $GOPATH/src/github-repo-crawler
 
-docker run --name dev --env-file ./config/dbConfig.env -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres
+docker run --name dev --env-file ./config/dbConfig.env -p 5432:5432 -v $PWD/postgres:/var/lib/postgresql/data postgres
 ```
 
 ### Access Database within Docker container:
