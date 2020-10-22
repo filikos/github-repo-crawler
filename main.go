@@ -14,7 +14,7 @@ func main() {
 
 	app := &cli.App{
 		Name:    "Github-Repo-Crawler",
-		Version: "v1.0.0",
+		Version: "v1.0.1",
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:  "port",
