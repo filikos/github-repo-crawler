@@ -2,6 +2,23 @@
 
 This REST-full API connects to the Github API and provides functionality for fetching data from public repositorys. Caching is implemented for quicker response times and also for relieving the Github API. PostgreSQL is used for persistant data storage.
 
+### Requirements
+
+- Go v1.14.4
+- Docker v19.03.12
+- Docker-Compose v1.26.2
+- PostgreQSL Docker-Image
+
+---
+
+### Quickstart 
+1. git clone https://github.com/filikos/github-repo-crawler.git
+2. cd github-repo-crawler
+3. make install
+4. docker-compose up
+
+---
+
 # Endpoints
 
 <details><summary>GET /repositories/{username}</summary>
@@ -116,21 +133,12 @@ Content-Type: **application/json**<br/>
 </p>
 </details>
 
-### Requirements
-
-- Go v1.14.4
-- Docker v19.03.12
-- Docker-Compose v1.26.2
-- PostgreQSL Docker-Image
-
----
-
 ### Run the github-repo-crawler
 
 To use persistant data store the PostgreSQL files location is needed. The path is working on MacOS & Linux, for Windows systems you may need to change the Postgres volume path within the docker-compose.yml.
 
 ```
-mdkir $HOME/docker/volumes/postgres
+mdkir postgres
 ```
 
 Copy PostgreSQL files into the directory above or create a new database. Use the migration.sql script to create the nessessary tables.

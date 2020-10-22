@@ -16,7 +16,7 @@ install :
 	-v $(shell pwd)/postgres:/var/lib/postgresql/data postgres
 	
 	@echo "Wait for database"
-	sleep 5
+	sleep 10
 
 	@echo "Sun migration scripts"
 	docker run \
