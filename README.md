@@ -1,6 +1,23 @@
 # Github-repo-crawler
 
-This REST-full API connects to the Github API and provides functionality for fetching data from public repositorys.
+This REST-full API connects to the Github API and provides functionality for fetching data from public repositorys. Caching is implemented for quicker response times and also for relieving the Github API. PostgreSQL is used for persistant data storage.
+
+### Requirements
+
+- Go v1.14.4
+- Docker v19.03.12
+- Docker-Compose v1.26.2
+- PostgreQSL Docker-Image
+
+---
+
+### Quickstart 
+1. git clone https://github.com/filikos/github-repo-crawler.git
+2. cd github-repo-crawler
+3. make install
+4. docker-compose up
+
+---
 
 # Endpoints
 
@@ -116,21 +133,12 @@ Content-Type: **application/json**<br/>
 </p>
 </details>
 
-### Requirements
-
-- Go v1.14.4
-- Docker v19.03.12
-- Docker-Compose v1.26.2
-- PostgreQSL Docker-Image
-
----
-
 ### Run the github-repo-crawler
 
 To use persistant data store the PostgreSQL files location is needed. The path is working on MacOS & Linux, for Windows systems you may need to change the Postgres volume path within the docker-compose.yml.
 
 ```
-mdkir $HOME/docker/volumes/postgres
+mdkir postgres
 ```
 
 Copy PostgreSQL files into the directory above or create a new database. Use the migration.sql script to create the nessessary tables.
@@ -156,7 +164,7 @@ For development purposes it is recommended to start the PostgreSQL Database manu
 ```
 cd $GOPATH/src/github-repo-crawler
 
-docker run --name dev --env-file ./config/dbConfig.env -p 5432:5432 -v $HOME/docker/volumes/postgres:/var/lib/postgresql/data postgres
+docker run --name dev --env-file ./config/dbConfig.env -p 5432:5432 -v $PWD/postgres:/var/lib/postgresql/data postgres
 ```
 
 ### Access Database within Docker container:
@@ -177,7 +185,7 @@ USAGE:
    main [global options] command [command options] [arguments...]
 
 VERSION:
-   v1.0.0
+   v1.0.1
 
 COMMANDS:
    help, h  Shows a list of commands or help for one command
